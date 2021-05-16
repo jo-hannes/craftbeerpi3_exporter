@@ -20,6 +20,9 @@ def metricsName(name):
   return saneName
 
 
+def fahrenheit2celsius(temp):
+  return ( temp - 32 ) / 1.8
+
 class Cbp3Collector(object):
   def __init__(self, addr, port):
     self._addr = addr
@@ -37,10 +40,13 @@ class Cbp3Collector(object):
     sensors = json.loads(requests.get(url).content.decode('UTF-8'))
     metric = Metric('cbp3_sensor_temp_celsius', 'craftbeer pi 3 temperature sensor', 'gauge')
     for sensor in sensors:
-      # TODO check for °F temperature and convert to °C if needed!
+      if sensors[sensor]['instance']['unit'] == '°F':
+        temp = fahrenheit2celsius(sensors[sensor]['instance']['value'])
+      else:
+        temp = sensors[sensor]['instance']['value']
       metric.add_sample(
         'cbp3_sensor_temp_celsius',
-        value=sensors[sensor]['instance']['value'],
+        value=temp,
         labels={'name': sensors[sensor]['name']} )
     yield metric
 
