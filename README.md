@@ -16,7 +16,7 @@ This script should work on all Debian based systems but it is only tested on Deb
 The following configuration options are available.
 | Option  | Description              | Default   |
 | ------- | ------------------------ | --------- |
-| -l port | Listen port of exporter  | 9303      |
+| -l port | Listen port of exporter  | 9826      |
 | -a addr | Address of CraftBeerPi 3 | 127.0.0.1 |
 | -p port | Port of CraftBeerPi 3    | 5000      |
 

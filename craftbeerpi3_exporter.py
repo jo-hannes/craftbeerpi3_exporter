@@ -137,7 +137,7 @@ def main():
   try:
     # parse arguments
     parser = argparse.ArgumentParser(description='Prometheus exporter for craftbeer pi 3')
-    parser.add_argument('-l', metavar='port', default=9303, type=int, required=False, help='Listen port of exporter')
+    parser.add_argument('-l', metavar='port', default=9826, type=int, required=False, help='Listen port of exporter')
     parser.add_argument('-a', metavar='addr', default='127.0.0.1', required=False, help='Address of craftbeer pi 3')
     parser.add_argument('-p', metavar='port', default=5000, type=int, required=False, help='Port of craftbeer pi 3')
     args = parser.parse_args()
