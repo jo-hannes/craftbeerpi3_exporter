@@ -1,0 +1,5 @@
+# Requirements mapped to Debian packages. Tested on Debian 10
+# Install all with:
+# sudo apt install $(grep -v '#' requirementsDebian.txt)
+python3-requests
+python3-prometheus-client
