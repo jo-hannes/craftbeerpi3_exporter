@@ -23,6 +23,7 @@ def metricsName(name):
 def fahrenheit2celsius(temp):
   return ( temp - 32 ) / 1.8
 
+
 class Cbp3Collector(object):
   def __init__(self, addr, port):
     self._addr = addr
@@ -53,13 +54,14 @@ class Cbp3Collector(object):
     # fetch the actor data http://{addr}:{port}/api/actor/
     url = 'http://{0}:{1}/api/actor/'.format(self._addr, self._port)
     actors = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbp3_actor_ratio', 'craftbeer pi 3 actor power %', 'gauge')
+    metric = Metric('cbp3_actor_power_ratio', 'craftbeer pi 3 actor power', 'gauge')
     for actor in actors:
       metric.add_sample(
-        'cbp3_actor_ratio',
-        value=actors[actor]['state'] * actors[actor]['power'],
+        'cbp3_actor_power_ratio',
+        value=actors[actor]['state'] * actors[actor]['power'] / 100,
         labels={'name': actors[actor]['name']})
-      yield metric
+    yield metric
+
 
 def main():
   try:
