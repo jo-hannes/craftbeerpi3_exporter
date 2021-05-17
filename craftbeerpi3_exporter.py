@@ -9,17 +9,6 @@ import requests
 import time
 
 
-def metricsName(name):
-  '''Create sane names for prometheus metrics'''
-  # regex allowed: [a-zA-Z_:][a-zA-Z0-9_:]*
-  # TODO check for regex and replace other chars
-  # - is not allowed in metrics names!
-  saneName = name.replace('-', '_')
-  # Replace special german characters
-  saneName = saneName.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue').replace('ß', 'ss')
-  return saneName
-
-
 def fahrenheit2celsius(temp):
   return ( temp - 32 ) / 1.8
 
@@ -28,6 +17,16 @@ class Cbp3Collector(object):
   def __init__(self, addr, port):
     self._addr = addr
     self._port = port
+
+  def getSensorTempCelsius(self, sensorId):
+    if self.sensors[sensorId]['instance']['unit'] == '°F':
+      return (self.sensors[sensorId]['instance']['value'] - 32 ) / 1.8
+    else:
+      return self.sensors[sensorId]['instance']['value']
+
+  def getActorPowerRation(self, actorId):
+    return self.actors[actorId]['state'] * self.actors[actorId]['power'] / 100
+
   def collect(self):
     # Add version of this SW to metrics
     # This also helps in case no sensor, actor, fermenter oe kettle is defined.
@@ -38,28 +37,24 @@ class Cbp3Collector(object):
 
     # Fetch the sensor data http://{addr}:{port}/api/sensor/
     url = 'http://{0}:{1}/api/sensor/'.format(self._addr, self._port)
-    sensors = json.loads(requests.get(url).content.decode('UTF-8'))
+    self.sensors = json.loads(requests.get(url).content.decode('UTF-8'))
     metric = Metric('cbp3_sensor_temp_celsius', 'craftbeer pi 3 temperature sensor', 'gauge')
-    for sensor in sensors:
-      if sensors[sensor]['instance']['unit'] == '°F':
-        temp = fahrenheit2celsius(sensors[sensor]['instance']['value'])
-      else:
-        temp = sensors[sensor]['instance']['value']
+    for sensor in self.sensors:
       metric.add_sample(
         'cbp3_sensor_temp_celsius',
-        value=temp,
-        labels={'name': sensors[sensor]['name']} )
+        value=self.getSensorTempCelsius(sensor),
+        labels={'name': self.sensors[sensor]['name']} )
     yield metric
 
     # fetch the actor data http://{addr}:{port}/api/actor/
     url = 'http://{0}:{1}/api/actor/'.format(self._addr, self._port)
-    actors = json.loads(requests.get(url).content.decode('UTF-8'))
+    self.actors = json.loads(requests.get(url).content.decode('UTF-8'))
     metric = Metric('cbp3_actor_power_ratio', 'craftbeer pi 3 actor power', 'gauge')
-    for actor in actors:
+    for actor in self.actors:
       metric.add_sample(
         'cbp3_actor_power_ratio',
-        value=actors[actor]['state'] * actors[actor]['power'] / 100,
-        labels={'name': actors[actor]['name']})
+        value=self.getActorPowerRation(actor),
+        labels={'name': self.actors[actor]['name']})
     yield metric
 
 
