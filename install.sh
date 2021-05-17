@@ -4,11 +4,13 @@
 
 # Instal craftbeerpi3_exporter on your system
 
+set -e
+
 # main
 function main
 {
     readonly destPath="/usr/bin/"
-    readonly systemdUnitDir="/lib/systemd/system/"
+    readonly systemdUnitDir="/etc/systemd/system/"
 
     # check if we have root rights
     if [[ $EUID -ne 0 ]]; then
@@ -24,6 +26,7 @@ function main
     fi
 
     # install required packages
+    # shellcheck disable=SC2046
     apt install $(grep -v '#' requirementsDebian.txt)
 
     # install the exporter
@@ -34,6 +37,8 @@ function main
     systemctl daemon-reload
     systemctl enable craftbeerpi3_exporter.service
     systemctl start craftbeerpi3_exporter.service
+
+    echo "craftbeerpi3_exporter successfully installed"
 
     exit 0
 }

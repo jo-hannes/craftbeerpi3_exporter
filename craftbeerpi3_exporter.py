@@ -9,10 +9,6 @@ import requests
 import time
 
 
-def fahrenheit2celsius(temp):
-  return ( temp - 32 ) / 1.8
-
-
 class Cbp3Collector(object):
   def __init__(self, addr, port):
     self._addr = addr
@@ -30,18 +26,18 @@ class Cbp3Collector(object):
   def collect(self):
     # Add version of this SW to metrics
     # This also helps in case no sensor, actor, fermenter oe kettle is defined.
-    metric = Metric('cbp3_exporter_version_info',
+    metric = Metric('cbpi_exporter_version_info',
         'Version of craftbeer pi 3 exporter', 'summary')
-    metric.add_sample('cbp3_exporter_version_info', value=1, labels={})
+    metric.add_sample('cbpi_exporter_version_info', value=2, labels={})
     yield metric
 
     # Fetch the sensor data http://{addr}:{port}/api/sensor/
     url = 'http://{0}:{1}/api/sensor/'.format(self._addr, self._port)
     self.sensors = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbp3_sensor_temp_celsius', 'craftbeer pi 3 temperature sensor', 'gauge')
+    metric = Metric('cbpi_sensor_temp_celsius', 'craftbeer pi 3 temperature sensor', 'gauge')
     for sensorId in self.sensors:
       metric.add_sample(
-        'cbp3_sensor_temp_celsius',
+        'cbpi_sensor_temp_celsius',
         value=self.getSensorTempCelsius(sensorId),
         labels={'name': self.sensors[sensorId]['name']} )
     yield metric
@@ -49,10 +45,10 @@ class Cbp3Collector(object):
     # fetch the actor data http://{addr}:{port}/api/actor/
     url = 'http://{0}:{1}/api/actor/'.format(self._addr, self._port)
     self.actors = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbp3_actor_power_ratio', 'craftbeer pi 3 actor power', 'gauge')
+    metric = Metric('cbpi_actor_power_ratio', 'craftbeer pi 3 actor power', 'gauge')
     for actorId in self.actors:
       metric.add_sample(
-        'cbp3_actor_power_ratio',
+        'cbpi_actor_power_ratio',
         value=self.getActorPowerRation(actorId),
         labels={'name': self.actors[actorId]['name']})
     yield metric
@@ -60,81 +56,82 @@ class Cbp3Collector(object):
     # Fetch the fermenter data http://{addr}:{port}/api/fermenter/
     url = 'http://{0}:{1}/api/fermenter/'.format(self._addr, self._port)
     fermenters = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbp3_fermenter', 'craftbeer pi 3 fermenter metrics', 'gauge')
+    metric = Metric('cbpi_fermenter', 'craftbeer pi 3 fermenter metrics', 'gauge')
     for fermenterId in fermenters:
       name = fermenters[fermenterId]['name']
       # get operation state
       metric.add_sample(
-        'cbp3_fermenter_state',
+        'cbpi_fermenter_state',
         value=fermenters[fermenterId]['state'],
         labels={'fermenter': name})
       # get target temperature
       metric.add_sample(
-        'cbp3_fermenter_target_temp_celsius',
+        'cbpi_fermenter_temp_celsius',
         value=fermenters[fermenterId]['target_temp'],
-        labels={'fermenter': name})
+        labels={'fermenter': name, 'sensor': 'target'})
       # get metrics of all temperature sensors
       for sensorName in ['sensor', 'sensor2', 'sensor3']:
         sensorId = fermenters[fermenterId][sensorName]
         if sensorId:
           metric.add_sample(
-            'cbp3_fermenter_temp_celsius',
+            'cbpi_fermenter_temp_celsius',
             value=self.getSensorTempCelsius(sensorId),
             labels={'fermenter': name, 'sensor': sensorName})
       # get cooler power ration
       coolerId = fermenters[fermenterId]['cooler']
       if coolerId:
         metric.add_sample(
-          'cbp3_fermenter_cooler_power_ratio',
+          'cbpi_fermenter_actor_power_ratio',
           value=self.getActorPowerRation(coolerId),
-          labels={'fermenter': name})
+          labels={'fermenter': name, 'type': 'cooler'})
       # get heater power ration
       heaterId = fermenters[fermenterId]['heater']
       if heaterId:
         metric.add_sample(
-          'cbp3_fermenter_heater_power_ratio',
+          'cbpi_fermenter_actor_power_ratio',
           value=self.getActorPowerRation(heaterId),
-          labels={'fermenter': name})
+          labels={'fermenter': name, 'type': 'heater'})
     yield metric
 
     # Fetch the kettle data http://{addr}:{port}/api/kettle/
     url = 'http://{0}:{1}/api/kettle/'.format(self._addr, self._port)
     kettles = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbp3_kettle', 'craftbeer pi 3 kettle metrics', 'gauge')
+    metric = Metric('cbpi_kettle', 'craftbeer pi 3 kettle metrics', 'gauge')
     for kettleId in kettles:
       name = kettles[kettleId]['name']
       # get operation state
       metric.add_sample(
-        'cbp3_kettle_state',
+        'cbpi_kettle_state',
         value=kettles[kettleId]['state'],
         labels={'kettle': name})
       # get target temperature
       metric.add_sample(
-        'cbp3_kettle_target_temp_celsius',
+        'cbpi_kettle_temp_celsius',
         value=kettles[kettleId]['target_temp'],
-        labels={'kettle': name})
+        labels={'kettle': name, 'sensor': 'target'})
       # get kettle temperature
       sensorId = kettles[kettleId]['sensor']
       if sensorId:
         metric.add_sample(
-          'cbp3_kettle_temp_celsius',
+          'cbpi_kettle_temp_celsius',
           value=self.getSensorTempCelsius(sensorId),
-          labels={'kettle': name})
+          labels={'kettle': name, 'sensor': 'sensor'})
       # get heater power ration
       heaterId = kettles[kettleId]['heater']
       if heaterId:
         metric.add_sample(
-          'cbp3_kettle_heater_power_ratio',
+          'cbpi_kettle_actor_power_ratio',
           value=self.getActorPowerRation(heaterId),
-          labels={'kettle': name})
+          labels={'kettle': name, 'type': 'heater'})
       # get cooler power ration
       agitatorId = kettles[kettleId]['agitator']
       if agitatorId:
         metric.add_sample(
-          'cbp3_kettle_agiator_power_ratio',
+          'cbpi_kettle_actor_power_ratio',
           value=self.getActorPowerRation(agitatorId),
-          labels={'kettle': name})
+          labels={'kettle': name, 'type': 'agitator'})
     yield metric
+
 
 def main():
   try:

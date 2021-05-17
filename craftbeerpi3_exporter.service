@@ -4,8 +4,12 @@
 [Unit]
 Description=Python Demo Service
 After=craftbeerpiboot.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Service]
+Restart=on-failure
+RestartSec=5s
 ExecStart=/usr/bin/python3 /usr/bin/craftbeerpi3_exporter
 
 [Install]
