@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: MIT
 # Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 import argparse

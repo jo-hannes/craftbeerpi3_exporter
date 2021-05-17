@@ -1,5 +1,5 @@
 #!/bin/bash
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: MIT
 # Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 # Instal craftbeerpi3_exporter on your system
