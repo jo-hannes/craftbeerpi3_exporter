@@ -2,7 +2,7 @@
 # Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 [Unit]
-Description=Python Demo Service
+Description=craftbeerpi3 prometheus exporter
 After=craftbeerpiboot.service
 StartLimitIntervalSec=300
 StartLimitBurst=5
