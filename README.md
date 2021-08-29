@@ -20,6 +20,6 @@ The following configuration options are available.
 | -l port    | Listen port of exporter         | 9826      |
 | -a addr    | Address of CraftBeerPi          | 127.0.0.1 |
 | -p port    | Port of CraftBeerPi             | 5000      |
-| -c version | Version of CraftbeerPi [3|4]    | 3         |
+| -c version | Version of CraftbeerPi 3 or 4   | 3         |
 
 Just add the options to the service file.
