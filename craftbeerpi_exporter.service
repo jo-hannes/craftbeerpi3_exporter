@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
+# Copyright 2021 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 [Unit]
-Description=craftbeerpi3 prometheus exporter
+Description=CraftBeerPi prometheus exporter
 After=craftbeerpiboot.service
 StartLimitIntervalSec=300
 StartLimitBurst=5
@@ -10,7 +10,7 @@ StartLimitBurst=5
 [Service]
 Restart=on-failure
 RestartSec=5s
-ExecStart=/usr/bin/python3 /usr/bin/craftbeerpi3_exporter
+ExecStart=/usr/bin/python3 /usr/bin/craftbeerpi_exporter
 
 [Install]
 WantedBy=multi-user.target
