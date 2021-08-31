@@ -1,12 +1,44 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-# Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
+# Copyright 2021 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 import argparse
 from prometheus_client import start_http_server, Metric, REGISTRY
 import json
 import requests
 import time
+
+class Cbp4Collector(object):
+  def __init__(self, addr, port):
+    self._addr = addr
+    self._port = port
+
+  def collect(self):
+    # Add version of this SW to metrics
+    # This also helps in case no sensor, actor, fermenter oe kettle is defined.
+    metric = Metric('cbpi_exporter_version_info', 'Version of craftbeer pi 4 exporter', 'summary')
+    metric.add_sample('cbpi_exporter_version_info', value=1, labels={})
+    yield metric
+
+    # Fetch sensor config http://{addr}:{port}/sensor/ and then iterate over /sensor/id
+    sensor_config_url = 'http://{0}:{1}/sensor/'.format(self._addr, self._port)
+    sensor_configs = json.loads(requests.get(sensor_config_url).content.decode('UTF-8'))
+    metric = Metric('cbpi_sensor_temp_celsius', 'craftbeer pi 4 temperature sensor', 'gauge')
+    for sensor_config in sensor_configs["data"]:
+      sensor_value_url = 'http://{0}:{1}/sensor/{2}'.format(self._addr, self._port, sensor_config["id"])
+      sensor_value = json.loads(requests.get(sensor_value_url).content.decode('UTF-8'))["value"]
+
+      metric.add_sample( 'cbpi_sensor_temp_celsius', value=sensor_value, labels={'name': sensor_config['name'], 'type': sensor_config["type"]} )
+    yield metric
+
+    # Fetch kettle data http://{addr}:{port}/kettle/
+    url = 'http://{0}:{1}/kettle/'.format(self._addr, self._port)
+    kettles = json.loads(requests.get(url).content.decode('UTF-8'))["data"]
+    metric = Metric('cbpi_kettle', 'craftbeer pi 4 kettle metrics', 'gauge')
+    for kettle in kettles:
+      # get target temperature
+      metric.add_sample('cbpi_kettle_temp_celsius', value=kettle['target_temp'], labels={'kettle': kettle["name"], 'sensor': 'target'})
+    yield metric
 
 
 class Cbp3Collector(object):
@@ -136,14 +168,28 @@ class Cbp3Collector(object):
 def main():
   try:
     # parse arguments
-    parser = argparse.ArgumentParser(description='Prometheus exporter for craftbeer pi 3')
+    parser = argparse.ArgumentParser(description='Prometheus exporter for craftbeer pi 3 and pi 4')
     parser.add_argument('-l', metavar='port', default=9826, type=int, required=False, help='Listen port of exporter')
-    parser.add_argument('-a', metavar='addr', default='127.0.0.1', required=False, help='Address of craftbeer pi 3')
-    parser.add_argument('-p', metavar='port', default=5000, type=int, required=False, help='Port of craftbeer pi 3')
+    parser.add_argument('-a', metavar='addr', default='127.0.0.1', required=False, help='Address of craftbeer pi')
+    parser.add_argument('-p', metavar='port', default=-1, type=int, required=False, help='Port of craftbeer pi')
+    parser.add_argument('-c', metavar='cbpi-version', default='3', required=False, help='Version of craftbeerpi [3|4]')
     args = parser.parse_args()
+
+    # use default port based on cbpi-version
+    if args.p == -1:
+      if args.c == "3":
+        args.p = 5000
+      if args.c == "4":
+        args.p = 8000
+
     # start server
     start_http_server(args.l)
-    REGISTRY.register(Cbp3Collector(args.a, args.p))
+    if args.c == "3":
+      REGISTRY.register(Cbp3Collector(args.a, args.p))
+    if args.c == "4":
+      REGISTRY.register(Cbp4Collector(args.a, args.p))
+
+
     while True:
       time.sleep(1)
 

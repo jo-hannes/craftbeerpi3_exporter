@@ -1,8 +1,8 @@
 #!/bin/bash
 # SPDX-License-Identifier: MIT
-# Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
+# Copyright 2021 Johannes Eigner <jo-hannes@dev-urandom.de>
 
-# Instal craftbeerpi3_exporter on your system
+# Install craftbeerpi_exporter on your system
 
 set -e
 
@@ -30,15 +30,19 @@ function main
     apt install $(grep -v '#' requirementsDebian.txt)
 
     # install the exporter
-    install -o root -g root -m 0755 craftbeerpi3_exporter.py "${destPath}/craftbeerpi3_exporter"
+    install -o root -g root -m 0755 craftbeerpi_exporter.py "${destPath}/craftbeerpi_exporter"
     # install systemd service file
-    install -o root -g root -m 0755 craftbeerpi3_exporter.service "${systemdUnitDir}/craftbeerpi3_exporter.service"
-    # enable and install craftbeerpi3_exporter.service
+    install -o root -g root -m 0755 craftbeerpi_exporter.service "${systemdUnitDir}/craftbeerpi_exporter.service"
+    # add extra options
+    if [[ $# -gt 0 ]]; then
+        sed -i "/ExecStart/s/$/ $*/" "${systemdUnitDir}/craftbeerpi_exporter.service"
+    fi
+    # enable and install craftbeerpi_exporter.service
     systemctl daemon-reload
-    systemctl enable craftbeerpi3_exporter.service
-    systemctl start craftbeerpi3_exporter.service
+    systemctl enable craftbeerpi_exporter.service
+    systemctl start craftbeerpi_exporter.service
 
-    echo "craftbeerpi3_exporter successfully installed"
+    echo "craftbeerpi_exporter successfully installed"
 
     exit 0
 }
