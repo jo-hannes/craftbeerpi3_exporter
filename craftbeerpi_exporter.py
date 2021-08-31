@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-# Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
+# Copyright 2021 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 import argparse
 from prometheus_client import start_http_server, Metric, REGISTRY
@@ -171,9 +171,16 @@ def main():
     parser = argparse.ArgumentParser(description='Prometheus exporter for craftbeer pi 3 and pi 4')
     parser.add_argument('-l', metavar='port', default=9826, type=int, required=False, help='Listen port of exporter')
     parser.add_argument('-a', metavar='addr', default='127.0.0.1', required=False, help='Address of craftbeer pi')
-    parser.add_argument('-p', metavar='port', default=5000, type=int, required=False, help='Port of craftbeer pi')
+    parser.add_argument('-p', metavar='port', default=-1, type=int, required=False, help='Port of craftbeer pi')
     parser.add_argument('-c', metavar='cbpi-version', default='3', required=False, help='Version of craftbeerpi [3|4]')
     args = parser.parse_args()
+
+    # use default port based on cbpi-version
+    if args.p == -1:
+      if args.c == "3":
+        args.p = 5000
+      if args.c == "4":
+        args.p = 8000
 
     # start server
     start_http_server(args.l)

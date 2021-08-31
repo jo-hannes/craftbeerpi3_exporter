@@ -1,6 +1,7 @@
 # craftbeerpi_exporter
 * [CraftBeerPi3](https://github.com/Manuel83/craftbeerpi3) exporter for Prometheus
 * [CraftBeerPi4](https://github.com/Manuel83/craftbeerpi4) exporter for Prometheus
+  * Right now, you need the at least avollkopf/craftbeerpi4@2d55410 until this gets merged to Manuels main repo.
 
 Based on Robust Perception's python exporter example: For more information see (https://www.robustperception.io/writing-json-exporters-in-python)
 
@@ -19,7 +20,7 @@ The following configuration options are available.
 | ---------- | ------------------------------- | --------- |
 | -l port    | Listen port of exporter         | 9826      |
 | -a addr    | Address of CraftBeerPi          | 127.0.0.1 |
-| -p port    | Port of CraftBeerPi             | 5000      |
-| -c version | Version of CraftbeerPi 3 or 4   | 3         |
+| -p port    | Port of CraftBeerPi             | 5000/8000 |
+| -c version | Version of CraftBeerPi 3 or 4   | 3         |
 
 Just add the options to the service file.
