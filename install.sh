@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: MIT
-# Copyright 2020 Johannes Eigner <jo-hannes@dev-urandom.de>
+# Copyright 2021 Johannes Eigner <jo-hannes@dev-urandom.de>
 
 # Install craftbeerpi_exporter on your system
 
@@ -33,6 +33,10 @@ function main
     install -o root -g root -m 0755 craftbeerpi_exporter.py "${destPath}/craftbeerpi_exporter"
     # install systemd service file
     install -o root -g root -m 0755 craftbeerpi_exporter.service "${systemdUnitDir}/craftbeerpi_exporter.service"
+    # add extra options
+    if [[ $# -gt 0 ]]; then
+        sed -i "/ExecStart/s/$/ $*/" "${systemdUnitDir}/craftbeerpi_exporter.service"
+    fi
     # enable and install craftbeerpi_exporter.service
     systemctl daemon-reload
     systemctl enable craftbeerpi_exporter.service

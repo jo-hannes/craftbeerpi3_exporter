@@ -12,6 +12,12 @@ sudo ./install.sh
 ```
 This script should work on all Debian based systems but it is only tested on Debian.
 
+You can pass extra options for craftbeerpi_exporter to the install script.
+This can be helpful when unsing CraftBeerPi4
+```shell
+sudo ./install.sh -c 4
+```
+
 ## Configuration
 **Note:** When running the craftbeerpi_exporter on the same system as CraftBeerPi 3, no configuration is needed.
 
