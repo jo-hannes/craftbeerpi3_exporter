@@ -66,11 +66,31 @@ class Cbp3Collector(object):
     # Fetch the sensor data http://{addr}:{port}/api/sensor/
     url = 'http://{0}:{1}/api/sensor/'.format(self._addr, self._port)
     self.sensors = json.loads(requests.get(url).content.decode('UTF-8'))
-    metric = Metric('cbpi_sensor_temp_celsius', 'craftbeer pi 3 temperature sensor', 'gauge')
+    metric = Metric('cbpi_sensor', 'craftbeer pi 3 sensor', 'gauge')
     for sensorId in self.sensors:
+      # create metrics based on given unit
+      unit = self.sensors[sensorId]['instance']['unit']
+      metricsName=''
+      val = self.sensors[sensorId]['instance']['value']
+      if unit == '°C':
+        metricsName='cbpi_sensor_temp_celsius'
+      elif unit == '°F':
+        metricsName='cbpi_sensor_temp_celsius'
+        val = (self.sensors[sensorId]['instance']['value'] - 32 ) / 1.8
+      elif unit == 'V':
+        metricsName='cbpi_sensor_volts'
+      elif unit == '°P':
+        metricsName='cbpi_sensor_gravity_degree_plato'
+      elif unit == 'Brix':
+        metricsName='cbpi_sensor_gravity_degree_brix'
+      elif unit == 'SG':
+        metricsName='cbpi_sensor_gravity_specific'
+      else:
+        print("Warning: Unit not supported: %s" % (unit))
+        continue
       metric.add_sample(
-        'cbpi_sensor_temp_celsius',
-        value=self.getSensorTempCelsius(sensorId),
+        metricsName,
+        value=val,
         labels={'name': self.sensors[sensorId]['name']} )
     yield metric
 
