@@ -40,6 +40,15 @@ class Cbp4Collector(object):
       metric.add_sample('cbpi_kettle_temp_celsius', value=kettle['target_temp'], labels={'kettle': kettle["name"], 'sensor': 'target'})
     yield metric
 
+    # Fetch fermenter data http://{addr}:{port}/fermenter/
+    url = 'http://{0}:{1}/fermenter/'.format(self._addr, self._port)
+    fermenters = json.loads(requests.get(url).content.decode('UTF-8'))["data"]
+    metric = Metric('cbpi_fermenter', 'craftbeer pi 4 fermenter metrics', 'gauge')
+    for fermenter in fermenters:
+      # get target temperature
+      metric.add_sample('cbpi_fermenter_temp_celsius', value=fermenter['target_temp'], labels={'fermenter': fermenter["name"], 'sensor': 'target'})
+    yield metric
+
 
 class Cbp3Collector(object):
   def __init__(self, addr, port):
