@@ -212,7 +212,7 @@ def main():
         args.p = 8000
 
     # start server
-    start_http_server(args.l)
+    start_http_server(port=args.l, addr='::')
     if args.c == "3":
       REGISTRY.register(Cbp3Collector(args.a, args.p))
     if args.c == "4":
